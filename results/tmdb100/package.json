@@ -1,0 +1,38 @@
+{
+  "name": "tmdb",
+  "version": "1.0.0",
+  "description": "hypergraph visualization of tmdb",
+  "main": "index.html",
+  "scripts": {
+    "start": "webpack --watch",
+    "postinstall": "npm link typescript",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "d3-array": "^1.0.1",
+    "d3-axis": "^1.0.4",
+    "d3-hierarchy": "^1.0.2",
+    "d3-request": "^1.0.2",
+    "d3-scale": "^1.0.3",
+    "d3-selection": "^1.0.3",
+    "lodash": "^4.15.0",
+    "react": "^15.3.1",
+    "react-dom": "^15.3.1"
+  },
+  "devDependencies": {
+    "@types/d3-array": "^1.0.5",
+    "@types/d3-scale": "^1.0.4",
+    "@types/d3-selection": "^1.0.4",
+    "@types/d3-axis": "^1.0.4",
+    "css-loader": "^0.25.0",
+    "less": "^2.7.1",
+    "less-loader": "^2.2.3",
+    "source-map-loader": "^0.1.5",
+    "style-loader": "^0.13.1",
+    "ts-loader": "^0.8.2",
+    "webpack": "^1.13.2"
+  },
+  "keywords": [],
+  "author": "Pao",
+  "license": "MIT"
+}
