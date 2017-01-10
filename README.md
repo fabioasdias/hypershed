@@ -1,7 +1,4 @@
-# hypershed
-Watershed on hypergraphs for data clustering
-
-The source code (python) is available in the folder code.
+# Watershed on hypergraphs for data clustering
 
 The file hg.py is the base library that implements the hypergraph class, following networkx syntax. The files smalltest.py and movies.py run the method for the small synthetic hypergraph and the TMDB datasets.
 
