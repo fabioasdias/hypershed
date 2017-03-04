@@ -7,8 +7,11 @@ import json
 from scipy.signal import gaussian
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from scipy.spatial.distance import pdist,squareform
 import matplotlib.pyplot as plt
 import networkx as nx
+from sklearn.metrics import calinski_harabaz_score,silhouette_score
 
 
 class HyperGraph:    
@@ -25,6 +28,7 @@ class HyperGraph:
         self._distCache=dict() #distance cache (e1,e2)
         self._FminCache=dict() # Fminus cache (e)
         self._nId=dict() # nodes -> ids (to keep consisten across saves)
+#        self._usedDists=dict() #TODO DEBUG
 
 
     def _fg(self,t,c):
@@ -120,7 +124,9 @@ class HyperGraph:
     def _kernel(self,e1,e2):
         return(np.exp(-np.power(norm(self.edge[e1]['fv']-self.edge[e2]['fv']),2)/len(self.edge[e1]['fv'])))
     
-    def _wdist(self,e1,e2):
+    def _wdist(self,E1,E2):
+        e1=min((E1,E2))
+        e2=max((E1,E2))
         if (e1 in self._distCache):
             if (e2 in self._distCache[e1]):
                 return(self._distCache[e1][e2])
@@ -140,6 +146,7 @@ class HyperGraph:
         if (s2<1E-6):
             s2=1
         cdist=distance.cosine(v1/s1,v2/s2)
+        #cdist=distance.euclidean(v1,v2)
         self._distCache[e1][e2]=cdist
         return(cdist)
                 
@@ -160,7 +167,7 @@ class HyperGraph:
         while (len(lp)>0):
             y=lp.popleft()
             breadth_first=True
-            allZ=[z for z in self.neighborsEdge(y,level) if (z not in L) and self._wdist(y,z)==self._Fminus(y,level)]
+            allZ=[z for z in self.neighborsEdge(y,level) if (z not in L) and (self._wdist(y,z)==self._Fminus(y,level)) and (self._wdist(y,z)<0.75)]
             if (not allZ):
                 break
             for z in allZ:
@@ -193,11 +200,34 @@ class HyperGraph:
                         psi[e]=nb_labs
                 else:
                     for e in L:
-                        psi[e]=lab                
+                        psi[e]=lab
+#                for i in range(1,len(L)):
+#                    e1=min((L[i-1],L[i]))
+#                    e2=max((L[i-1],L[i]))
+#                    self._usedDists[(e1,e2)]=self._distCache[e1][e2]
         return(psi)
 
+    def kmeans(self,levelin,K=8):
+        allE=self.edges(levelin)
+        X=np.zeros((len(allE),len(self.edge[allE[0]]['fv'])))
+        for i in range(len(allE)):
+            e=allE[i]
+            X[i,:]=self.edge[e]['fv']
+
+        clusters= KMeans(n_clusters=K).fit_predict(X)
+        self._psi=dict()
+        for i in range(len(allE)):
+            self._psi[allE[i]]=int(clusters[i])
+        
     def cluster(self,levelin,levelout):
         psi=self.watershed(levelin)
+        #DEBUG
+#        plt.figure()
+#        plt.hist(list(self._usedDists.values()),10)
+#        plt.savefig('hist.png')
+#        plt.close()
+
+        
         for e in psi:
             self._psi[e]=psi[e]
 
@@ -230,6 +260,7 @@ class HyperGraph:
             else:
                 #fv corresponding to the element with smallest distance to all others
                 #self.edge[ename]['fv']=fv[e][np.argmin(np.sum(distance.squareform(distance.pdist(np.array(fv[e]),'cosine')),axis=0))]
+                #mean 
                 self.edge[ename]['fv']=np.sum(fv[e],0)
                 s=np.sum(self.edge[ename]['fv'])
                 if (s>1E-6):
@@ -285,6 +316,7 @@ class HyperGraph:
 
             
         model = TSNE(n_components=2, random_state=0, metric='cosine', perplexity=3)
+        
         Y=model.fit_transform(X)
         plt.ioff()
         plt.scatter(Y[:,0],Y[:,1],s=40,c=colors)
@@ -293,7 +325,42 @@ class HyperGraph:
         plt.show()
 
         
+    def computeScore(self,layer,metric='euclidean'):
+        # FAIRNESS DISCLAIMER: I implemented this, but I'm not
+        # inclined to include the results on the paper, not because we
+        # lose in all scores, but because kmeans solves a different
+        # problem (it ignores the topology), and these scores assume
+        # different hypothesis (similarity intra cluster,
+        # dissimilarity inter cluster - which is not entirely true in
+        # our case) - How do you evaluate an image segmentation
+        # without the ground truth?
+        allE=self.edges(layer)
+        X=np.zeros((len(allE),len(self.edge[allE[0]]['fv'])))
+        for i in range(len(allE)):
+            e=allE[i]
+            X[i,:]=self.edge[e]['fv']
+        print('silhouette_score {0}'.format(silhouette_score(X,[self._psi[e] for e in allE],metric=metric)))            
+        print('calinski_harabaz_score {0}'.format(calinski_harabaz_score(X,[self._psi[e] for e in allE])))
+
+        C=list(set(self._psi.values()))
+        inds=dict()
+        for c in C:
+            inds[c]=[]
+        for i in range(len(allE)):
+            inds[self._psi[allE[i]]].append(i)
+
+        fd=[]
+        for c in C:
+            cX=X[inds[c],:]
+            N=cX.shape[0]
+            if (N>1):
+                D=squareform(pdist(cX,metric=metric))
+                fd.append(np.sum(D)/(N**2-N))
+
+#        print(fd)
+        print('fd score {0}'.format(np.mean(fd)))
         
+        print('\n')
         
     def saveJson(self,level,fname,onlyBorderNodes=False):
         res=dict()
