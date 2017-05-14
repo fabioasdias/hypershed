@@ -41,14 +41,21 @@ for row in edgecsv:
     G.edge[id]['name']=row[1]
 fe.close()
 
-    
 
+t=time.time()
+G.kmeans(0,K=17)
+print('kmeans time {0}'.format(time.time()-t))
+G.computeScore(0)
+G.saveJson(0,'kmeans.json')
 
 t=time.time()
 G.cluster(0,1)
-print(time.time()-t)
+print('hypershed time {0}'.format(time.time()-t))
+G.computeScore(0,metric='cosine')
 G.saveJson(0,'l0.json')#,onlyBorderNodes=True)
+
 #G.projFeatureVectors('a.svg',0)
+exit()
 if (False):
     GG=G.toGraph(0)
     nodelist=GG.nodes()
