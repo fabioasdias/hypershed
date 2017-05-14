@@ -1,5 +1,10 @@
 # Watershed on hypergraphs for data clustering
 
+Fabio Dias, Moussa R. Mansour, Paola Valdivia, Jean Cousty and Laurent Najman
+
+This implementation relates to the article presented in the 13th ISMM, available [https://link.springer.com/chapter/10.1007/978-3-319-57240-6_17](at this link).
+
+
 The file hg.py is the base library that implements the hypergraph class, following networkx syntax. The files smalltest.py and movies.py run the method for the small synthetic hypergraph and the TMDB datasets.
 
 There are several datasets, with different number of edges, on the data folder. The results folder contain our prototype interface. To reuse with other results, just replace the file l0.json in the data folder, inside of the results folder (not the data in the root folder).
