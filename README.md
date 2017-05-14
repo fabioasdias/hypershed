@@ -2,7 +2,7 @@
 
 Fabio Dias, Moussa R. Mansour, Paola Valdivia, Jean Cousty and Laurent Najman
 
-This implementation relates to the article presented in the 13th ISMM, available [https://link.springer.com/chapter/10.1007/978-3-319-57240-6_17](at this link).
+This implementation relates to the article presented in the 13th ISMM, available [at this link](https://link.springer.com/chapter/10.1007/978-3-319-57240-6_17).
 
 
 The file hg.py is the base library that implements the hypergraph class, following networkx syntax. The files smalltest.py and movies.py run the method for the small synthetic hypergraph and the TMDB datasets.
