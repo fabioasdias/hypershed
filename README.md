@@ -9,8 +9,6 @@ The file hg.py is the base library that implements the hypergraph class, followi
 
 There are several datasets, with different number of edges, on the data folder. The results folder contain our prototype interface. To reuse with other results, just replace the file l0.json in the data folder, inside of the results folder (not the data in the root folder).
 
-Live results available at: http://alphasite.zapto.org/wshed/
-
 
 Acknowledgments
 
